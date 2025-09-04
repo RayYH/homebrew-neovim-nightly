@@ -32,30 +32,44 @@ jobs:
         id: cpr
         uses: peter-evans/create-pull-request@v6
         with:
-          base: master                 # <- change to 'main' if that's your default branch
+          base: main                 # ← change if your default branch is 'master'
           branch: chore/update-neovim-nightly
           add-paths: |
             Casks/neovim-nightly.rb
           commit-message: "chore(cask): update neovim-nightly from template"
           title: "Update neovim-nightly Cask checksums"
-          body: "Automated update of Casks/neovim-nightly.rb"
+          body: "Automated update of Casks/neovim-nightly.rb from tmpl/neovim-nightly.rb."
           delete-branch: true
 
-      # Option 1: Use GitHub's auto-merge (waits for checks/review if required)
-      - name: Enable PR auto-merge
+      - name: Merge PR (squash) or enable auto-merge
         if: steps.cpr.outputs.pull-request-number
-        uses: peter-evans/enable-pull-request-automerge@v3
+        uses: actions/github-script@v7
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
-          merge-method: squash
+          script: |
+            const pr = Number('${{ steps.cpr.outputs.pull-request-number }}');
+            const owner = context.repo.owner;
+            const repo  = context.repo.repo;
 
-      # Option 2: Merge immediately (works only if no branch protections require review)
-      - name: Merge PR now
-        if: steps.cpr.outputs.pull-request-operation == 'created' || steps.cpr.outputs.pull-request-operation == 'updated'
-        uses: peter-evans/merge-pull-request@v3
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          pull-request: ${{ steps.cpr.outputs.pull-request-number }}
-          merge-method: squash
-          delete-branch: true
+            // Try immediate merge (works if no blocking branch protections)
+            try {
+              await github.pulls.merge({
+                owner, repo, pull_number: pr, merge_method: "squash"
+              });
+              core.info(`Merged PR #${pr}`);
+            } catch (e) {
+              core.warning(`Immediate merge failed: ${e.message}`);
+              // Fallback: enable auto-merge so it completes once checks/reviews pass
+              const { data: prInfo } = await github.pulls.get({ owner, repo, pull_number: pr });
+              const mutation = `
+                mutation EnableAutoMerge($pullRequestId: ID!, $mergeMethod: PullRequestMergeMethod!) {
+                  enablePullRequestAutoMerge(input: { pullRequestId: $pullRequestId, mergeMethod: $mergeMethod }) {
+                    clientMutationId
+                  }
+                }`;
+              await github.graphql(mutation, {
+                pullRequestId: prInfo.node_id,
+                mergeMethod: "SQUASH",
+                headers: { authorization: `token ${{ secrets.GITHUB_TOKEN }}` }
+              });
+              core.info(`Enabled auto-merge for PR #${pr}`);
+            }
