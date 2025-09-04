@@ -32,7 +32,7 @@ jobs:
         id: cpr
         uses: peter-evans/create-pull-request@v6
         with:
-          base: main                 # ← change if your default branch is 'master'
+          base: master
           branch: chore/update-neovim-nightly
           add-paths: |
             Casks/neovim-nightly.rb
