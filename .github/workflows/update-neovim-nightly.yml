@@ -28,15 +28,34 @@ jobs:
           chmod +x scripts/update_neovim_nightly.sh
           scripts/update_neovim_nightly.sh
 
-      - name: Create Pull Request (if changed)
+      - name: Create PR
+        id: cpr
         uses: peter-evans/create-pull-request@v6
         with:
-          commit-message: "chore(cask): update neovim-nightly from template"
-          title: "Update neovim-nightly Cask checksums"
-          body: |
-            Automated update of `Casks/neovim-nightly.rb` using `tmpl/neovim-nightly.rb` as template.
-            Nightly assets checked on: ${{ github.run_id }}
+          base: master                 # <- change to 'main' if that's your default branch
           branch: chore/update-neovim-nightly
-          delete-branch: true
           add-paths: |
             Casks/neovim-nightly.rb
+          commit-message: "chore(cask): update neovim-nightly from template"
+          title: "Update neovim-nightly Cask checksums"
+          body: "Automated update of Casks/neovim-nightly.rb"
+          delete-branch: true
+
+      # Option 1: Use GitHub's auto-merge (waits for checks/review if required)
+      - name: Enable PR auto-merge
+        if: steps.cpr.outputs.pull-request-number
+        uses: peter-evans/enable-pull-request-automerge@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
+          merge-method: squash
+
+      # Option 2: Merge immediately (works only if no branch protections require review)
+      - name: Merge PR now
+        if: steps.cpr.outputs.pull-request-operation == 'created' || steps.cpr.outputs.pull-request-operation == 'updated'
+        uses: peter-evans/merge-pull-request@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          pull-request: ${{ steps.cpr.outputs.pull-request-number }}
+          merge-method: squash
+          delete-branch: true
