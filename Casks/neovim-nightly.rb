@@ -2,8 +2,8 @@ cask "neovim-nightly" do
   version :latest
 
   arch arm: "arm64", intel: "x86_64"
-  sha256 arm:   "02c7c3b048a1f8baea5448ada53c7dfcbfd5aefed3b7a5f85e907bca040b57fb",
-         intel: "36ce88bed13eae5dd1cd93ba6ad38a60db3483965b7679c5688924e3c931224c"
+  sha256 arm:   "215fdb5975bb16bbb6084dead18e2ec0b0fa199abe731a8fbd5db11945b01ae8",
+         intel: "9504632aa40fe0e70f794ce5ecdce9e729e0441c43b0fb70453201d14ddc726b"
 
   url "https://github.com/neovim/neovim/releases/download/nightly/nvim-macos-#{arch}.tar.gz",
       verified: "github.com/neovim"
