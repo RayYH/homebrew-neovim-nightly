@@ -6,3 +6,4 @@ This homebrew tap automates the installation and updating of the nightly version
 2. Tap this repository `brew tap rayyh/neovim-nightly`
 3. Install neovim nightly `brew install neovim-nightly`
 4. Run neovim using `nvim` in the command line
+5. Upgrade `nvim` to latest nightly build: `brew upgrade neovim-nightly`
