@@ -5,8 +5,7 @@ cask "neovim-nightly" do
   sha256 arm:   "__ARM_SHA256__",
          intel: "__INTEL_SHA256__"
 
-  url "https://github.com/neovim/neovim/releases/download/nightly/nvim-macos-#{arch}.tar.gz",
-      verified: "github.com/neovim"
+  url "https://github.com/neovim/neovim/releases/download/nightly/nvim-macos-#{arch}.tar.gz"
 
   name "Neovim"
   desc "Vim-fork focused on extensibility and usability"
