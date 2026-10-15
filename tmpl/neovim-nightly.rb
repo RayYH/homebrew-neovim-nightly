@@ -13,7 +13,7 @@ cask "neovim-nightly" do
 
   binary "nvim-macos-#{arch}/bin/nvim"
 
-  postflight do
-    system_command "xattr", args: ["-cr", "#{staged_path}"]
+  postflight_steps do
+    run "/usr/bin/xattr", args: ["-cr", "{{staged_path}}"]
   end
 end
